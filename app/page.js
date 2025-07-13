@@ -56,7 +56,7 @@ export default function Page() {
 
   return (
     <main className="min-h-screen bg-zinc-900 text-zinc-100 p-8 font-sans">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-[68rem] mx-auto">
         <h1 className="text-3xl font-bold mb-6">📋 Temporary Clipboard</h1>
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
@@ -64,12 +64,12 @@ export default function Page() {
             type="file"
             ref={fileInputRef}
             onChange={e => setFile(e.target.files[0])}
-            className="bg-zinc-800 text-sm text-zinc-300 rounded border border-zinc-700 file:bg-zinc-700 file:border-none file:px-4 file:py-1 file:text-sm file:text-zinc-200 hover:file:bg-zinc-600"
+            className="w-108 bg-zinc-800 text-sm text-zinc-300 cursor-pointer rounded border border-zinc-700 file:bg-zinc-700 file:border-none file:px-4 file:py-1 file:text-sm file:text-zinc-200 hover:file:bg-zinc-600"
           />
           <button
             onClick={upload}
             disabled={!file || loading}
-            className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 px-4 py-2 rounded text-white transition"
+            className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer px-4 py-2 rounded text-white transition"
           >
             {loading ? 'Uploading...' : 'Upload'}
           </button>
@@ -101,7 +101,7 @@ export default function Page() {
                 </div>
                 <button
                   onClick={() => handleDelete(blob.pathname)}
-                  className="mt-2 bg-red-600 hover:bg-red-500 px-3 py-1 rounded text-white text-sm"
+                  className="mt-2 bg-red-700 hover:bg-red-600 px-3 py-1 cursor-pointer rounded text-white text-sm"
                 >
                   Delete
                 </button>
