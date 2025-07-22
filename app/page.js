@@ -1,13 +1,14 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import CircularProgress from './components/CircularProgress'; // Adjust the import path as needed
+import CircularProgress from './components/CircularProgress'; // Adjust the import path as needed 
 
 export default function Page() {
   const [file, setFile] = useState(null);
   const [blobs, setBlobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [deletingPath, setDeletingPath] = useState(null);
 
 
   // const upload = async () => {
@@ -30,6 +31,7 @@ export default function Page() {
 
   const upload = () => {
     if (!file) return;
+    setUploadProgress(0);
 
     const reader = new FileReader();
     reader.onload = async () => {
@@ -93,9 +95,10 @@ export default function Page() {
   };
 
   const handleDelete = async (pathname) => {
+    const confirmDelete = confirm("Do you want to delete it?");
+    if (!confirmDelete) return;
 
-    let validation = confirm("Do you want to delete it?");
-    if (!validation) return;
+    setDeletingPath(pathname);
 
     await fetch('/api/delete', {
       method: 'POST',
@@ -104,6 +107,7 @@ export default function Page() {
     });
 
     await fetchBlobs();
+    setDeletingPath(null);
   };
 
   const extractFilename = (pathname) => {
@@ -146,7 +150,7 @@ export default function Page() {
 
             <div className="flex gap-3">
 
-              {uploadProgress > 0 && (
+              {loading && (
                 // <div className="w-full bg-zinc-700 rounded mt-2 h-2 overflow-hidden">
                 //   <div
                 //     className="bg-blue-500 h-full transition-all"
@@ -168,7 +172,7 @@ export default function Page() {
               </button>
               <button
                 onClick={cancel}
-                className="bg-red-600 hover:bg-red-500 text-white px-4 py-1 rounded transition"
+                className={`bg-red-600 hover:bg-red-500 text-white px-4 py-1 rounded transition ${loading ? 'hidden' : 'inline'}`}
               >
                 Cancel
               </button>
@@ -176,7 +180,7 @@ export default function Page() {
           </div>
         )}
 
-        <h2 className="text-xl font-semibold mb-4">🗂 Uploaded Files</h2>
+        <h2 className="text-xl font-semibold mb-4">☁️ Uploaded Files</h2>
 
         {blobs.length === 0 ? (
           <p className="text-zinc-400">No files uploaded yet.</p>
@@ -202,9 +206,10 @@ export default function Page() {
                 </div>
                 <button
                   onClick={() => handleDelete(blob.pathname)}
-                  className="mt-2 bg-red-700 hover:bg-red-600 px-3 py-1 cursor-pointer rounded text-white text-sm"
+                  disabled={deletingPath === blob.pathname}
+                  className={`mt-2 bg-red-700 hover:bg-red-600 px-3 py-1 cursor-pointer rounded text-white text-sm ${deletingPath === blob.pathname ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  Delete
+                  {deletingPath === blob.pathname ? 'Deleting...' : 'Delete'}
                 </button>
               </div>
             ))}
