@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import CircularProgress from './components/CircularProgress'; // Adjust the import path as needed
 
 export default function Page() {
   const [file, setFile] = useState(null);
@@ -50,7 +51,7 @@ export default function Page() {
         if (xhr.status === 200) {
           setUploadProgress(100);
           setFile(null);
-          refreshFiles(); // call your function to refresh file list
+          fetchBlobs(); // call your function to refresh file list
         } else {
           console.error('Upload failed');
         }
@@ -143,16 +144,21 @@ export default function Page() {
               <p className="text-sm text-zinc-400">{(file.size / 1024).toFixed(2)} KB</p>
             </div>
 
-            {uploadProgress > 0 && (
-              <div className="w-full bg-zinc-700 rounded mt-2 h-2 overflow-hidden">
-                <div
-                  className="bg-blue-500 h-full transition-all"
-                  style={{ width: `${uploadProgress}%` }}
-                ></div>
-              </div>
-            )}
-
             <div className="flex gap-3">
+
+              {uploadProgress > 0 && (
+                // <div className="w-full bg-zinc-700 rounded mt-2 h-2 overflow-hidden">
+                //   <div
+                //     className="bg-blue-500 h-full transition-all"
+                //     style={{ width: `${uploadProgress}%` }}
+                //   ></div>
+                // </div>
+                <div className="flex justify-center items-center">
+                  <CircularProgress progress={uploadProgress} />
+                </div>
+              )}
+
+
               <button
                 onClick={upload}
                 disabled={loading}
