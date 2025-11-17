@@ -10,7 +10,8 @@ export default function handler(req, res) {
 
   const { username, password } = req.body;
 
-  if (username === USERNAME && password === PASSWORD) {
+  // if (username === USERNAME && password === PASSWORD) {
+  if (username === USERNAME && PASSWORD.includes(password)) {
     const token = jwt.sign({ username }, SECRET, { expiresIn: '1d' });
 
     res.setHeader('Set-Cookie', serialize('auth_token', token, {
