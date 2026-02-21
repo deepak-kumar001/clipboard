@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import CircularProgress from './components/CircularProgress'; // Adjust the import path as needed 
+import { put } from '@vercel/blob';
 
 export default function Page() {
   const [file, setFile] = useState(null);
@@ -29,48 +30,111 @@ export default function Page() {
   //   setLoading(false);
   // };
 
-  const upload = () => {
+  // const upload = () => {
+  //   if (!file) return;
+  //   setUploadProgress(0);
+
+  //   const reader = new FileReader();
+  //   reader.onload = async () => {
+  //     const data = reader.result;
+
+  //     const xhr = new XMLHttpRequest();
+  //     xhr.open('POST', '/api/upload', true);
+  //     xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+  //     xhr.setRequestHeader('X-Filename', file.name);
+
+  //     xhr.upload.onprogress = (event) => {
+  //       if (event.lengthComputable) {
+  //         const percent = Math.round((event.loaded / event.total) * 100);
+  //         setUploadProgress(percent);
+  //       }
+  //     };
+
+  //     xhr.onload = () => {
+  //       if (xhr.status === 200) {
+  //         setUploadProgress(100);
+  //         setFile(null);
+  //         fetchBlobs(); // call your function to refresh file list
+  //         console.log('Upload successful');
+  //       } else {
+  //         console.error('Upload failed');
+  //       }
+  //       setLoading(false);
+  //     };
+
+  //     xhr.onerror = () => {
+  //       console.error('Upload error');
+  //       setLoading(false);
+  //     };
+
+  //     setLoading(true);
+  //     xhr.send(data);
+  //   };
+
+  //   reader.readAsArrayBuffer(file);
+  // };
+
+  // const upload = async () => {
+  //   if (!file) return;
+
+  //   setLoading(true);
+  //   setUploadProgress(0);
+
+  //   const res = await fetch(`/api/blob-upload-url?filename=${file.name}`);
+  //   const { url } = await res.json();
+
+  //   const xhr = new XMLHttpRequest();
+  //   xhr.open('PUT', url, true);
+
+  //   xhr.upload.onprogress = (event) => {
+  //     if (event.lengthComputable) {
+  //       const percent = Math.round((event.loaded / event.total) * 100);
+  //       setUploadProgress(percent);
+  //     }
+  //   };
+
+  //   xhr.onload = async () => {
+  //     setLoading(false);
+  //     setFile(null);
+  //     setUploadProgress(0);
+  //     await fetchBlobs();
+  //   };
+
+  //   xhr.onerror = () => {
+  //     setLoading(false);
+  //     alert('Upload failed');
+  //   };
+
+  //   xhr.send(file);
+  // };
+
+
+
+  const upload = async () => {
     if (!file) return;
+
+    setLoading(true);
     setUploadProgress(0);
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const data = reader.result;
-
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', '/api/upload', true);
-      xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-      xhr.setRequestHeader('X-Filename', file.name);
-
-      xhr.upload.onprogress = (event) => {
+    const blob = await put(file.name, file, {
+      access: 'public',
+      addRandomSuffix: true,
+      onUploadProgress: (event) => {
         if (event.lengthComputable) {
           const percent = Math.round((event.loaded / event.total) * 100);
           setUploadProgress(percent);
         }
-      };
+      },
+    });
 
-      xhr.onload = () => {
-        if (xhr.status === 200) {
-          setUploadProgress(100);
-          setFile(null);
-          fetchBlobs(); // call your function to refresh file list
-        } else {
-          console.error('Upload failed');
-        }
-        setLoading(false);
-      };
+    console.log(blob.url);
 
-      xhr.onerror = () => {
-        console.error('Upload error');
-        setLoading(false);
-      };
-
-      setLoading(true);
-      xhr.send(data);
-    };
-
-    reader.readAsArrayBuffer(file);
+    setFile(null);
+    setUploadProgress(0);
+    await fetchBlobs();
+    setLoading(false);
   };
+
 
   const onDrop = async (acceptedFiles) => {
     if (acceptedFiles.length > 0) {
