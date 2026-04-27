@@ -6,21 +6,31 @@ export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e) => {
     e.preventDefault(); // prevent default form refresh
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
+    setLoading(true);
+    setError('');
 
-    if (res.ok) {
-      router.push('/');
-    } else {
-      const data = await res.json();
-      setError(data.error);
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (res.ok) {
+        router.push('/');
+      } else {
+        const data = await res.json();
+        setError(data.error);
+        setLoading(false);
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+      setLoading(false);
     }
   };
 
@@ -50,9 +60,14 @@ export default function LoginPage() {
           />
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-500 py-2 rounded cursor-pointer"
+            disabled={loading}
+            className={`w-full py-2 rounded font-medium transition-all ${
+              loading
+                ? 'bg-blue-700 cursor-not-allowed opacity-75'
+                : 'bg-blue-600 hover:bg-blue-500 cursor-pointer'
+            }`}
           >
-            Login
+            {loading ? '⏳ Logging in...' : 'Login'}
           </button>
         </form>
       </div>

@@ -3,7 +3,7 @@ import { serialize } from 'cookie';
 
 const SECRET = process.env.JWT_SECRET;
 const USERNAME = process.env.USERNAME;
-const PASSWORD = process.env.PASSWORD;
+const PASSWORD = JSON.parse(process.env.PASSWORD);
 
 export default function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();

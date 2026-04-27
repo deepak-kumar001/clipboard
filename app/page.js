@@ -11,6 +11,14 @@ export default function Page() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [deletingPath, setDeletingPath] = useState(null);
 
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
 
   // const upload = async () => {
   //   if (!file) return;
@@ -140,7 +148,7 @@ export default function Page() {
           <div className="bg-zinc-800 rounded-lg p-4 mb-6 flex items-center justify-between shadow-md border border-zinc-700">
             <div>
               <p className="text-zinc-200 font-medium">{file.name}</p>
-              <p className="text-sm text-zinc-400">{(file.size / 1024).toFixed(2)} KB</p>
+              <p className="text-sm text-zinc-400">{formatFileSize(file.size)}</p>
             </div>
 
             <div className="flex gap-3">
@@ -196,7 +204,7 @@ export default function Page() {
                     {extractFilename(blob.pathname)}
                   </a>
                   <p className="text-sm text-zinc-400">
-                    {(blob.size / 1024).toFixed(1)} KB
+                    {formatFileSize(blob.size)}
                   </p>
                 </div>
                 <button
