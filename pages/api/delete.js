@@ -12,6 +12,11 @@ export default async function handler(req, res) {
       token: process.env.BLOB_READ_WRITE_TOKEN,
     });
 
+    // Remove from queue
+    if (global.blobQueue) {
+      global.blobQueue = global.blobQueue.filter(x => x.path !== pathname);
+    }
+
     res.status(200).json({ success: true });
   } catch (err) {
     console.error(err);

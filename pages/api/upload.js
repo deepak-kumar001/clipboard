@@ -33,34 +33,18 @@
 // }
 
 
-// /api/upload.js
-import { put } from '@vercel/blob';
-
-export const config = {
-  api: {
-    bodyParser: false, // Allow raw binary data
-  },
-};
+import { generateClientTokenFromReadWriteToken } from '@vercel/blob/client';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const buffers = [];
-  for await (const chunk of req) {
-    buffers.push(chunk);
-  }
-  const data = Buffer.concat(buffers);
+  const { filename } = req.body;
+  if (!filename) return res.status(400).json({ error: 'Missing filename' });
 
-  const filename = req.headers['x-filename'] || 'upload.bin';
-
-  const blob = await put(filename, data, {
-    access: 'public',
-    addRandomSuffix: true,
+  const token = await generateClientTokenFromReadWriteToken({
+    token: process.env.BLOB_READ_WRITE_TOKEN,
+    pathname: filename,
   });
 
-  // TEMP memory store (use DB in real apps)
-  if (!global.blobQueue) global.blobQueue = [];
-  global.blobQueue.push({ path: blob.pathname, expiresAt: Date.now() + 30 * 60 * 1000 });
-
-  res.status(200).json({ url: blob.url });
+  res.status(200).json({ token });
 }

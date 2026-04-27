@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { put } from '@vercel/blob/client';
 import CircularProgress from './components/CircularProgress'; // Adjust the import path as needed 
 
 export default function Page() {
@@ -29,47 +30,41 @@ export default function Page() {
   //   setLoading(false);
   // };
 
-  const upload = () => {
+  const upload = async () => {
     if (!file) return;
+    setLoading(true);
     setUploadProgress(0);
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const data = reader.result;
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: file.name }),
+      });
+      const { token } = await res.json();
 
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', '/api/upload', true);
-      xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-      xhr.setRequestHeader('X-Filename', file.name);
+      const blob = await put(file.name, file, {
+        access: 'public',
+        token,
+        onUploadProgress: (progress) => {
+          setUploadProgress(Math.round(progress?.percentage ?? 0));
+        },
+      });
 
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const percent = Math.round((event.loaded / event.total) * 100);
-          setUploadProgress(percent);
-        }
-      };
+      // Add to queue
+      await fetch('/api/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pathname: blob.pathname }),
+      });
 
-      xhr.onload = () => {
-        if (xhr.status === 200) {
-          setUploadProgress(100);
-          setFile(null);
-          fetchBlobs(); // call your function to refresh file list
-        } else {
-          console.error('Upload failed');
-        }
-        setLoading(false);
-      };
-
-      xhr.onerror = () => {
-        console.error('Upload error');
-        setLoading(false);
-      };
-
-      setLoading(true);
-      xhr.send(data);
-    };
-
-    reader.readAsArrayBuffer(file);
+      setFile(null);
+      fetchBlobs();
+    } catch (error) {
+      console.error('Upload failed', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onDrop = async (acceptedFiles) => {
